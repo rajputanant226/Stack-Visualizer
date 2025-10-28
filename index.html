@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Stack Visualizer</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #080808, #3d3c41);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      padding: 30px;
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: 0.3s ease;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+
+    p {
+      color: #d1d5db;
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      width: 180px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .push { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .pop { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    .peek { background: linear-gradient(90deg, #facc15, #eab308); color: #1e293b; }
+
+    button:hover {
+      transform: scale(1.07);
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+    }
+
+    .stack-area {
+      width: 100%;
+      min-height: 180px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      overflow-x: auto;
+      box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    .item {
+      min-width: 80px;
+      padding: 15px 0;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      animation: appear 0.4s ease;
+      transition: all 0.3s;
+    }
+
+    .peeked {
+      border: 4px solid #facc15;
+      box-shadow: 0 0 25px #facc15;
+      transform: scale(1.1);
+    }
+
+    .message {
+      margin-top: 15px;
+      font-style: italic;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    @keyframes appear {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 600px) {
+      .item {
+        min-width: 60px;
+        padding: 10px 0;
+      }
+      input {
+        width: 140px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2> Stack Visualizer</h2>
+    <p>Push, Pop, and Peek — Stack grows left ➜ right!</p>
+
+    <div class="controls">
+      <input id="value" placeholder="Enter value..." />
+      <button class="push" onclick="pushItem()">PUSH</button>
+      <button class="pop" onclick="popItem()">POP</button>
+      <button class="peek" onclick="peekItem()">PEEK</button>
+    </div>
+
+    <div class="stack-area">
+      <div class="stack" id="stack"></div>
+    </div>
+
+    <div class="message" id="msg"></div>
+  </div>
+
+  <script>
+    let stack = [];
+
+    function updateView(highlight = false) {
+      const container = document.getElementById("stack");
+      container.innerHTML = "";
+
+      if (stack.length === 0) {
+        container.innerHTML = "<p style='color:#d1d5db;'>Stack is empty...</p>";
+        return;
+      }
+
+      stack.forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.textContent = item;
+        if (highlight && i === stack.length - 1) div.classList.add("peeked");
+        container.appendChild(div);
+      });
+    }
+
+    function showMessage(text) {
+      const msg = document.getElementById("msg");
+      msg.textContent = text;
+      setTimeout(() => msg.textContent = "", 2500);
+    }
+
+    function pushItem() {
+      let val = document.getElementById("value").value.trim();
+      if (!val) val = `Item ${stack.length + 1}`;
+      if (stack.length >= 10) return showMessage("🚫 Stack Overflow (max 10)");
+      stack.push(val);
+      updateView();
+      showMessage(`✅ Pushed: ${val}`);
+      document.getElementById("value").value = "";
+    }
+
+    function popItem() {
+      if (stack.length === 0) return showMessage("⚠️ Stack Underflow!");
+      const val = stack.pop();
+      updateView();
+      showMessage(`🗑️ Popped: ${val}`);
+    }
+
+    function peekItem() {
+      if (stack.length === 0) return showMessage("🚫 Stack is empty!");
+      updateView(true);
+      showMessage(`👀 Top: ${stack[stack.length - 1]}`);
+    }
+
+    updateView();
+  </script>
+</body>
+</html>
